@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+See https://www.mojohaus.org/versions-maven-plugin/version-rules.html for documentation.
+Despite what the docs say it is NOT going to be deprecated according to the github discussion.
+-->
+<ruleset comparisonMethod="maven"
+         xmlns="http://mojo.codehaus.org/versions-maven-plugin/rule/2.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://mojo.codehaus.org/versions-maven-plugin/rule/2.0.0 http://www.mojohaus.org/versions-maven-plugin/xsd/rule-2.0.0.xsd">
+    <ignoreVersions>
+        <!--
+            Attempt to ignore all pre-release qualifier versions. Apparently this is a loose convention
+            and the maven versions plugin has no default for ignoring these.  I couldn't find a set of regexes online that
+            actually worked, so these are hand crafted and possibly imperfect!
+            Maven actually doesn't document this well, but you can see the qualifiers on the
+            POM Reference page under "Version Order Specification",
+            which only references how it sorts the special qualifiers: https://maven.apache.org/pom.html
+            Some real version examples from maven central I based these on:
+            2.4.0-b180830.0359
+            2.0.0-rc4
+            2.0.0-rc0+test8
+            4.13-beta-3
+            5.5.0-RC1
+
+            "(?i)" means treat the regex as case-insensitive
+        -->
+        <ignoreVersion type="regex">(?i).*[.-](b|beta)([\d.-]+)?(\+.+)?</ignoreVersion>
+        <ignoreVersion type="regex">(?i).*[.-](a|alpha)([\d.-]+)?(\+.+)?</ignoreVersion>
+        <ignoreVersion type="regex">(?i).*[.-](m|milestone)([\d.-]+)?(\+.+)?</ignoreVersion>
+        <ignoreVersion type="regex">(?i).*[.-](rc)([\d.-]+)?(\+.+)?</ignoreVersion>
+    </ignoreVersions>
+</ruleset>
