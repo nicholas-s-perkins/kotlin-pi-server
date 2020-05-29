@@ -6,7 +6,7 @@
     <groupId>com.nsperkins.pi</groupId>
     <artifactId>kotlin-pi-server</artifactId>
     <version>${revision}</version>
-    <packaging>pom</packaging>
+    <packaging>jar</packaging>
 
     <properties>
         <revision>1.0.0-SNAPSHOT</revision>
@@ -15,7 +15,11 @@
         <maven.compiler.source>11</maven.compiler.source>
         <maven.compiler.target>11</maven.compiler.target>
         <kotlin.version>1.3.72</kotlin.version>
+
         <kotlin.compiler.incremental>true</kotlin.compiler.incremental>
+        <libs.dir.name>libs</libs.dir.name>
+        <mainClass>com.nsperkins.pi.MainKt</mainClass>
+        <artifact.name>${artifactId}</artifact.name>
 
         <ktor.version>1.3.2</ktor.version>
 
@@ -85,6 +89,7 @@
     </repositories>
 
     <build>
+        <finalName>${artifact.name}</finalName>
         <pluginManagement>
             <plugins>
                 <plugin>
@@ -184,6 +189,41 @@
                 <configuration>
                     <jvmTarget>${maven.compiler.target}</jvmTarget>
                 </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <configuration>
+                    <archive>
+                        <manifest>
+                            <mainClass>${mainClass}</mainClass>
+                            <addClasspath>true</addClasspath>
+                            <classpathPrefix>${libs.dir.name}/</classpathPrefix>
+                            <addDefaultImplementationEntries>true</addDefaultImplementationEntries>
+                            <addDefaultSpecificationEntries>true</addDefaultSpecificationEntries>
+                        </manifest>
+                    </archive>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <version>${maven-dependency-plugin.version}</version>
+                <executions>
+                    <execution>
+                        <id>copy-dependencies</id>
+                        <phase>prepare-package</phase>
+                        <goals>
+                            <goal>copy-dependencies</goal>
+                        </goals>
+                        <configuration>
+                            <outputDirectory>${project.build.directory}/${libs.dir.name}</outputDirectory>
+                            <overWriteReleases>false</overWriteReleases>
+                            <overWriteSnapshots>false</overWriteSnapshots>
+                            <overWriteIfNewer>true</overWriteIfNewer>
+                        </configuration>
+                    </execution>
+                </executions>
             </plugin>
         </plugins>
     </build>
