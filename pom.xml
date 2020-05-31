@@ -37,7 +37,7 @@
         <maven-resources-plugin.version>3.1.0</maven-resources-plugin.version>
         <maven-deploy-plugin.version>3.0.0-M1</maven-deploy-plugin.version>
         <maven-versions-plugin.version>2.7</maven-versions-plugin.version>
-
+        <maven-bundle-plugin.version>4.2.1</maven-bundle-plugin.version>
     </properties>
 
     <dependencies>
@@ -72,6 +72,11 @@
         <dependency>
             <groupId>org.jetbrains.kotlinx</groupId>
             <artifactId>kotlinx-coroutines-reactor</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.red5</groupId>
+            <artifactId>red5-server</artifactId>
+            <version>1.2.3</version>
         </dependency>
 
         <dependency>
@@ -203,9 +208,10 @@
                     <args>
                         <arg>-Xjsr305=strict</arg>
                     </args>
-                    <compilerPlugins>
-                        <plugin>spring</plugin>
-                    </compilerPlugins>
+                    <!-- Appears to be some sort of bug between this and the bundle plugin ;/ -->
+<!--                    <compilerPlugins>-->
+<!--                        <plugin>spring</plugin>-->
+<!--                    </compilerPlugins>-->
                 </configuration>
             </plugin>
             <plugin>
@@ -242,6 +248,12 @@
                         </configuration>
                     </execution>
                 </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.felix</groupId>
+                <artifactId>maven-bundle-plugin</artifactId>
+                <version>${maven-bundle-plugin.version}</version>
+                <extensions>true</extensions>
             </plugin>
         </plugins>
     </build>
