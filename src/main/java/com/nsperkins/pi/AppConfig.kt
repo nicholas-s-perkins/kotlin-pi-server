@@ -13,6 +13,8 @@ import org.springframework.web.servlet.view.freemarker.FreeMarkerViewResolver
 @Configuration
 class AppConfig {
 
+    val udpPort = 11111
+
     @Bean
     fun freemarkerViewResolver(): FreeMarkerViewResolver {
         val resolver = FreeMarkerViewResolver()
@@ -22,14 +24,15 @@ class AppConfig {
         return resolver
     }
 
-//    @Bean
-//    fun udpIn(): IntegrationFlow {
-//        return IntegrationFlows.from(Udp.inboundAdapter(11111).id("udpIn"))
-//                .transform { p: ByteArray? -> String(p!!).toUpperCase() }
-//                .handle(Udp
-//                        .outboundAdapter("headers['ip_packetAddress']")
-//                        .socketExpression("@udpIn.socket")
-//                )
-//                .get()
-//    }
+    @Bean
+    fun udpInConfig(): IntegrationFlow {
+        return IntegrationFlows
+                .from(Udp.inboundAdapter(udpPort).id("udpIn"))
+                .transform { p: ByteArray? -> String(p!!).toUpperCase() }
+                .handle(Udp
+                        .outboundAdapter("headers['ip_packetAddress']")
+                        .socketExpression("@udpIn.socket")
+                )
+                .get()
+    }
 }
