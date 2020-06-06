@@ -5,7 +5,7 @@ import org.springframework.ui.Model
 import org.springframework.web.bind.annotation.GetMapping
 
 @Controller
-class HomeController {
+class HomeController() {
     @GetMapping("/")
     fun home(model: Model): String {
         return "home"

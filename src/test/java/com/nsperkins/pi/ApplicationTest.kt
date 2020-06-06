@@ -1,16 +1,24 @@
 package com.nsperkins.pi
 
+import com.nsperkins.pi.video.IRaspivid
+import com.nsperkins.pi.video.MockRaspivid
 import org.assertj.core.api.Assertions.assertThat
+import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
+import org.springframework.boot.test.context.TestConfiguration
 import org.springframework.boot.test.web.client.TestRestTemplate
 import org.springframework.boot.web.server.LocalServerPort
-import java.io.Closeable
-import java.net.DatagramPacket
-import java.net.DatagramSocket
-import java.net.InetAddress
+import org.springframework.context.annotation.Bean
+import org.springframework.context.annotation.Primary
+import org.springframework.http.HttpMethod
+import org.springframework.util.StreamUtils
+import org.springframework.web.client.ResponseExtractor
+import java.io.File
+import java.io.FileOutputStream
 
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
@@ -27,28 +35,66 @@ class ApplicationTest(
     }
 
     @Test
-    fun testUdp() {
-        UdpClient(config.udpPort).use {
-            val str = it.sendMessage("henlo")
-            assertEquals("HENLO", str)
-        }
+    fun testRaspivid() {
+        restTemplate.postForLocation("$appUrl/video/stream/start", null)
+
+        val file = File.createTempFile("download", "tmp")
+        file.deleteOnExit()
+
+        assertEquals(0, file.readBytes().size)
+
+        //see bytes delivered
+        restTemplate.execute("$appUrl/video/stream", HttpMethod.GET, null, ResponseExtractor { httpRes ->
+            StreamUtils.copy(httpRes.getBody(), FileOutputStream(file))
+        })
+
+        Thread.sleep(500)
+
+        assertTrue(file.readBytes().isNotEmpty())
+
+        //cleanup
+        restTemplate.postForLocation("$appUrl/video/stream/stop", null)
+
     }
 
-    private class UdpClient(private val port: Int) : Closeable {
-        private val socket: DatagramSocket = DatagramSocket()
-        private val address: InetAddress = InetAddress.getByName("localhost")
+    //    @Test
+//    fun testUdp() {
+//        UdpClient(config.udpPort).use {
+//            val str = it.sendMessage("henlo")
+//            assertEquals("HENLO", str)
+//        }
+//    }
 
-        fun sendMessage(msg: String): String {
-            val buf = msg.toByteArray()
-            var packet = DatagramPacket(buf, buf.size, address, port)
-            socket.send(packet)
-            packet = DatagramPacket(buf, buf.size)
-            socket.receive(packet)
-            return String(packet.data, 0, packet.length)
-        }
+//    @Test
+//    fun testFile() {
+//        val vidBytes = File("test_video.mp4").readBytes()
+//        assertEquals(1136991, vidBytes.size)
+//    }
 
-        override fun close() {
-            socket.close()
+//    private class UdpClient(private val port: Int) : Closeable {
+//        private val socket: DatagramSocket = DatagramSocket()
+//        private val address: InetAddress = InetAddress.getByName("localhost")
+//
+//        fun sendMessage(msg: String): String {
+//            val buf = msg.toByteArray()
+//            var packet = DatagramPacket(buf, buf.size, address, port)
+//            socket.send(packet)
+//            packet = DatagramPacket(buf, buf.size)
+//            socket.receive(packet)
+//            return String(packet.data, 0, packet.length)
+//        }
+//
+//        override fun close() {
+//            socket.close()
+//        }
+//    }
+
+    @TestConfiguration
+    class TestConfig {
+        @Bean
+        @Primary
+        fun raspivid(): IRaspivid {
+            return MockRaspivid(11111, "test_video.mp4")
         }
     }
 }
